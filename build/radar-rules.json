@@ -37268,6 +37268,27 @@
       }
     ]
   },
+  "thewirehindi.com": {
+    "_name": "The Wire Hindi",
+    ".": [
+      {
+        "title": "Category",
+        "docs": "https://docs.rsshub.app/routes/new-media",
+        "source": [
+          "/category/*"
+        ],
+        "target": "/thewirehindi/category/:category"
+      },
+      {
+        "title": "Latest News",
+        "docs": "https://docs.rsshub.app/routes/new-media",
+        "source": [
+          "/"
+        ],
+        "target": "/thewirehindi/"
+      }
+    ]
+  },
   "thoughtworks.com": {
     "_name": "ThoughtWorks",
     "www": [
@@ -41112,6 +41133,19 @@
           "/:author"
         ],
         "target": "/zhiy/posts/:author"
+      }
+    ]
+  },
+  "zhizhuan100.com.cn": {
+    "_name": "智篆商业",
+    "www": [
+      {
+        "title": "analytic",
+        "docs": "https://docs.rsshub.app/routes/finance",
+        "source": [
+          "/analysis"
+        ],
+        "target": "/zhizhuan100/analytic"
       }
     ]
   },
