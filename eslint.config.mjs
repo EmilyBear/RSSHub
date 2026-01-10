@@ -1,13 +1,14 @@
-import prettier from 'eslint-plugin-prettier';
-import stylistic from '@stylistic/eslint-plugin';
-import unicorn from 'eslint-plugin-unicorn';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import n from 'eslint-plugin-n';
-import globals from 'globals';
-import tsParser from '@typescript-eslint/parser';
-import yamlParser from 'yaml-eslint-parser';
-import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import stylistic from '@stylistic/eslint-plugin';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import { importX } from 'eslint-plugin-import-x';
+import n from 'eslint-plugin-n';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import unicorn from 'eslint-plugin-unicorn';
+import globals from 'globals';
+import yamlParser from 'yaml-eslint-parser';
 // import nsfwFlagPlugin from './eslint-plugins/nsfw-flag.js';
 
 const __dirname = import.meta.dirname;
@@ -26,14 +27,13 @@ export default [
     //     },
     // },
     {
-        ignores: ['**/coverage', '**/.vscode', '**/docker-compose.yml', '!.github', 'assets/build', 'lib/routes-deprecated', 'lib/router.js', '**/babel.config.js', 'scripts/docker/minify-docker.js', 'dist'],
+        ignores: ['**/coverage', '**/.vscode', '**/docker-compose.yml', '!.github', 'assets/build', 'lib/routes-deprecated', 'lib/router.js', '**/babel.config.js', 'scripts/docker/minify-docker.js', 'dist', 'dist-lib'],
     },
-    ...compat.extends('eslint:recommended', 'plugin:prettier/recommended', 'plugin:yml/recommended', 'plugin:@typescript-eslint/recommended'),
+    ...compat.extends('eslint:recommended', 'plugin:yml/recommended', 'plugin:@typescript-eslint/recommended', 'plugin:@typescript-eslint/stylistic'),
     n.configs['flat/recommended-script'],
     unicorn.configs.recommended,
     {
         plugins: {
-            prettier,
             '@stylistic': stylistic,
             '@typescript-eslint': typescriptEslint,
         },
@@ -60,7 +60,6 @@ export default [
 
             'no-await-in-loop': 'error',
             'no-control-regex': 'off',
-            'no-duplicate-imports': 'error',
             'no-prototype-builtins': 'off',
 
             // suggestions
@@ -119,12 +118,12 @@ export default [
                 },
                 {
                     selector: 'CallExpression[callee.property.name="catch"] > ArrowFunctionExpression[params.length=0] > ArrayExpression[elements.length=0]',
-                    message: "Usage of .catch(() => []) is not allowed. Please handle the error appropriately."
+                    message: 'Usage of .catch(() => []) is not allowed. Please handle the error appropriately.',
                 },
                 {
                     selector: 'CallExpression[callee.property.name="catch"] > ArrowFunctionExpression[params.length=0] > BlockStatement[body.length=0]',
-                    message: "Usage of .catch(() => {}) is not allowed. Please handle the error appropriately."
-                }
+                    message: 'Usage of .catch(() => {}) is not allowed. Please handle the error appropriately.',
+                },
             ],
 
             'no-unneeded-ternary': 'error',
@@ -148,8 +147,16 @@ export default [
             'require-await': 'error',
 
             // typescript
+            '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+
             '@typescript-eslint/ban-ts-comment': 'off',
+            '@typescript-eslint/consistent-indexed-object-style': 'off', // stylistic
+            '@typescript-eslint/consistent-type-definitions': 'off', // stylistic
+            '@typescript-eslint/no-empty-function': 'off', // stylistic && tests
             '@typescript-eslint/no-explicit-any': 'off',
+
+            '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
+
             '@typescript-eslint/no-var-requires': 'off',
 
             '@typescript-eslint/no-unused-expressions': [
@@ -159,6 +166,16 @@ export default [
                     allowTernary: true,
                 },
             ],
+
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    args: 'after-used',
+                    argsIgnorePattern: '^_',
+                },
+            ],
+
+            '@typescript-eslint/prefer-for-of': 'error',
 
             // unicorn
             'unicorn/consistent-function-scoping': 'warn',
@@ -177,6 +194,7 @@ export default [
             'unicorn/no-array-sort': 'warn',
             'unicorn/no-await-expression-member': 'off',
             'unicorn/no-empty-file': 'warn',
+            'unicorn/no-for-loop': 'off',
             'unicorn/no-hex-escape': 'warn',
             'unicorn/no-null': 'off',
             'unicorn/no-object-as-default-parameter': 'warn',
@@ -245,6 +263,7 @@ export default [
             'unicorn/prevent-abbreviations': 'off',
             'unicorn/switch-case-braces': ['error', 'avoid'],
             'unicorn/text-encoding-identifier-case': 'off',
+            'unicorn/number-literal-case': 'off',
 
             // formatting rules
             '@stylistic/arrow-parens': 'error',
@@ -252,7 +271,7 @@ export default [
             '@stylistic/comma-spacing': 'error',
             '@stylistic/comma-style': 'error',
             '@stylistic/function-call-spacing': 'error',
-            '@stylistic/keyword-spacing': 'error',
+            '@stylistic/keyword-spacing': 'off',
             '@stylistic/linebreak-style': 'error',
 
             '@stylistic/lines-around-comment': [
@@ -292,12 +311,11 @@ export default [
             'n/no-unsupported-features/node-builtins': [
                 'error',
                 {
-                    version: '>=22.16.0',
+                    version: '^22.20.0 || ^24',
+                    allowExperimental: true,
                     ignores: [],
                 },
             ],
-
-            'prettier/prettier': 'off',
 
             'yml/quotes': [
                 'error',
@@ -329,6 +347,27 @@ export default [
                     beforeBlockComment: false,
                 },
             ],
+        },
+    },
+    {
+        files: ['**/*.?([cm])[jt]s?(x)'],
+        plugins: {
+            'simple-import-sort': simpleImportSort,
+            'import-x': importX,
+        },
+        rules: {
+            'sort-imports': 'off',
+            'import-x/order': 'off',
+            'simple-import-sort/imports': 'error',
+            'simple-import-sort/exports': 'error',
+
+            'import-x/first': 'error',
+            'import-x/newline-after-import': 'error',
+            'no-duplicate-imports': 'off',
+            'import-x/no-duplicates': 'error',
+
+            '@typescript-eslint/consistent-type-imports': 'error',
+            'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
         },
     },
 ];
